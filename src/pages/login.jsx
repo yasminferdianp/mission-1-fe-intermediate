@@ -4,7 +4,7 @@ const Login = () => {
   return (
     <div
       className="flex items-center justify-center min-h-screen px-4 sm:px-6 md:px-0 bg-cover bg-center"
-      style={{ backgroundImage: "url(/image/bg-login.jpg)" }}
+      style={{ backgroundImage: "url(/bg-login.jpg)" }}
     >
       <div className="bg-black/70 backdrop-blur-md p-6 sm:p-8 md:p-10 rounded-2xl w-full max-w-[400px] text-white shadow-2xl">
         <div className="text-center mb-6">
