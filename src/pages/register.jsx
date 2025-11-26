@@ -3,7 +3,7 @@ import "../App.css";
 function Register() {
   return (
     <>
-      <div className='flex items-center justify-center min-h-screen px-4 sm:px-6 md:px-0 bg-[url(assets/image/bg-register.jpg)] bg-cover bg-center'>
+      <div className='flex items-center justify-center min-h-screen px-4 sm:px-6 md:px-0 bg-[url(/image/bg-register.jpg)] bg-cover bg-center'>
         <div className='bg-black/70 backdrop-blur-md p-6 sm:p-8 md:p-10 rounded-2xl w-full max-w-[400px] text-white shadow-2xl'>
           <div className='text-center mb-6'>
             <div className='flex justify-center items-center gap-2 mb-2'>
