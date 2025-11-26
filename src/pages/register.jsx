@@ -1,4 +1,5 @@
 import "../App.css";
+import bgRegister from '/image/bg-register.jpg'
 
 function Register() {
   return (
