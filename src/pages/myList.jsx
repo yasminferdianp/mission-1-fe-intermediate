@@ -1,40 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useMovies } from "../hooks/useMovies";
 
 export default function MyList() {
-  // Array object untuk menyimpan daftar film
-  // Load dari localStorage jika ada, jika tidak gunakan data default
-  const getInitialMovies = () => {
-    const savedMovies = localStorage.getItem("chillMovies");
-    if (savedMovies) {
-      return JSON.parse(savedMovies);
-    }
-    return [
-      {
-        id: 1,
-        title: "Duty After School",
-        image: "g17.png",
-        genre: "Drama, Action",
-        rating: 4.5,
-        status: "Belum Selesai",
-      },
-      {
-        id: 2,
-        title: "Rebel in Borderland",
-        image: "g1.png",
-        genre: "Action, Sci-Fi",
-        rating: 4.8,
-        status: "Selesai",
-      },
-    ];
-  };
-
-  const [movies, setMovies] = useState(getInitialMovies);
-
-  // Simpan ke localStorage setiap kali movies berubah
-  useEffect(() => {
-    localStorage.setItem("chillMovies", JSON.stringify(movies));
-  }, [movies]);
+  // Menggunakan custom hook untuk operasi CRUD dengan API
+  const {
+    movies,
+    loading,
+    error,
+    handleAddMovie,
+    handleUpdateMovie,
+    handleDeleteMovie,
+  } = useMovies();
 
   // State untuk form add/edit
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -47,36 +24,74 @@ export default function MyList() {
     status: "Belum Selesai",
   });
 
-  // GET DATA - Menampilkan semua film
+  // GET DATA - Menggunakan data dari custom hook
   const getMovies = () => {
-    return movies;
+    return movies || [];
   };
 
-  // ADD DATA - Menambah film baru
-  const addMovie = (newMovie) => {
-    const movieToAdd = {
-      id: movies.length > 0 ? Math.max(...movies.map((m) => m.id)) + 1 : 1,
-      ...newMovie,
+  // ADD DATA - Menambah film baru menggunakan API
+  const addMovie = async (newMovie) => {
+    // Validasi dan konversi data
+    const movieData = {
+      title: newMovie.title.trim(),
+      image: newMovie.image,
+      genre: newMovie.genre.trim(),
+      rating: newMovie.rating ? parseFloat(newMovie.rating) : 0,
+      status: newMovie.status,
     };
-    setMovies([...movies, movieToAdd]);
-    resetForm();
-    alert("Film berhasil ditambahkan!");
+    
+    // Validasi rating
+    if (isNaN(movieData.rating) || movieData.rating < 0 || movieData.rating > 5) {
+      alert("Rating harus berupa angka antara 0-5!");
+      return;
+    }
+    
+    const result = await handleAddMovie(movieData);
+    if (result.success) {
+      resetForm();
+      alert("Film berhasil ditambahkan!");
+      setIsFormOpen(false);
+    } else {
+      alert(`Gagal menambahkan film: ${result.error}`);
+    }
   };
 
-  // UPDATE DATA - Mengupdate film yang sudah ada
-  const updateMovie = (id, updatedMovie) => {
-    setMovies(
-      movies.map((movie) => (movie.id === id ? { ...movie, ...updatedMovie } : movie))
-    );
-    resetForm();
-    alert("Film berhasil diupdate!");
+  // UPDATE DATA - Mengupdate film yang sudah ada menggunakan API
+  const updateMovie = async (id, updatedMovie) => {
+    // Validasi dan konversi data
+    const movieData = {
+      title: updatedMovie.title.trim(),
+      image: updatedMovie.image,
+      genre: updatedMovie.genre.trim(),
+      rating: updatedMovie.rating ? parseFloat(updatedMovie.rating) : 0,
+      status: updatedMovie.status,
+    };
+    
+    // Validasi rating
+    if (isNaN(movieData.rating) || movieData.rating < 0 || movieData.rating > 5) {
+      alert("Rating harus berupa angka antara 0-5!");
+      return;
+    }
+    
+    const result = await handleUpdateMovie(id, movieData);
+    if (result.success) {
+      resetForm();
+      alert("Film berhasil diupdate!");
+      setIsFormOpen(false);
+    } else {
+      alert(`Gagal mengupdate film: ${result.error}`);
+    }
   };
 
-  // DELETE DATA - Menghapus film
-  const deleteMovie = (id) => {
+  // DELETE DATA - Menghapus film menggunakan API
+  const deleteMovie = async (id) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus film ini?")) {
-      setMovies(movies.filter((movie) => movie.id !== id));
-      alert("Film berhasil dihapus!");
+      const result = await handleDeleteMovie(id);
+      if (result.success) {
+        alert("Film berhasil dihapus!");
+      } else {
+        alert(`Gagal menghapus film: ${result.error}`);
+      }
     }
   };
 
@@ -101,14 +116,13 @@ export default function MyList() {
   };
 
   // Handler untuk submit form
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (editingMovie) {
-      updateMovie(editingMovie.id, formData);
+      await updateMovie(editingMovie.id, formData);
     } else {
-      addMovie(formData);
+      await addMovie(formData);
     }
-    setIsFormOpen(false);
   };
 
   // Reset form
@@ -175,28 +189,44 @@ export default function MyList() {
           </button>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-8">
+            <p className="text-gray-400">Memuat data...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-600/20 border border-red-600 rounded-lg p-4 mb-4">
+            <p className="text-red-400">Error: {error}</p>
+          </div>
+        )}
+
         {/* Info Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-[#22282A] p-4 rounded-lg">
-            <p className="text-gray-400 text-sm">Total Film</p>
-            <p className="text-2xl font-bold">{getMovies().length}</p>
+        {!loading && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="bg-[#22282A] p-4 rounded-lg">
+              <p className="text-gray-400 text-sm">Total Film</p>
+              <p className="text-2xl font-bold">{getMovies().length}</p>
+            </div>
+            <div className="bg-[#22282A] p-4 rounded-lg">
+              <p className="text-gray-400 text-sm">Selesai Ditonton</p>
+              <p className="text-2xl font-bold">
+                {getMovies().filter((m) => m.status === "Selesai").length}
+              </p>
+            </div>
+            <div className="bg-[#22282A] p-4 rounded-lg">
+              <p className="text-gray-400 text-sm">Belum Selesai</p>
+              <p className="text-2xl font-bold">
+                {getMovies().filter((m) => m.status === "Belum Selesai").length}
+              </p>
+            </div>
           </div>
-          <div className="bg-[#22282A] p-4 rounded-lg">
-            <p className="text-gray-400 text-sm">Selesai Ditonton</p>
-            <p className="text-2xl font-bold">
-              {getMovies().filter((m) => m.status === "Selesai").length}
-            </p>
-          </div>
-          <div className="bg-[#22282A] p-4 rounded-lg">
-            <p className="text-gray-400 text-sm">Belum Selesai</p>
-            <p className="text-2xl font-bold">
-              {getMovies().filter((m) => m.status === "Belum Selesai").length}
-            </p>
-          </div>
-        </div>
+        )}
 
         {/* Movie List */}
-        {getMovies().length === 0 ? (
+        {!loading && getMovies().length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-400 text-xl mb-4">Belum ada film di daftar Anda</p>
             <button
@@ -206,7 +236,7 @@ export default function MyList() {
               Tambah Film Pertama
             </button>
           </div>
-        ) : (
+        ) : !loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {getMovies().map((movie) => (
               <div
@@ -251,7 +281,7 @@ export default function MyList() {
               </div>
             ))}
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Modal Form Add/Edit */}
@@ -371,9 +401,10 @@ export default function MyList() {
               <div className="flex gap-2 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-[#0F1E93] hover:bg-blue-700 py-2 rounded-full font-semibold transition"
+                  disabled={loading}
+                  className="flex-1 bg-[#0F1E93] hover:bg-blue-700 py-2 rounded-full font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {editingMovie ? "Update" : "Tambah"}
+                  {loading ? "Memproses..." : editingMovie ? "Update" : "Tambah"}
                 </button>
                 <button
                   type="button"
