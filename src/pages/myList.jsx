@@ -48,8 +48,8 @@ export default function MyList() {
     
     const result = await handleAddMovie(movieData);
     if (result.success) {
-      resetForm();
-      alert("Film berhasil ditambahkan!");
+    resetForm();
+    alert("Film berhasil ditambahkan!");
       setIsFormOpen(false);
     } else {
       alert(`Gagal menambahkan film: ${result.error}`);
@@ -75,8 +75,8 @@ export default function MyList() {
     
     const result = await handleUpdateMovie(id, movieData);
     if (result.success) {
-      resetForm();
-      alert("Film berhasil diupdate!");
+    resetForm();
+    alert("Film berhasil diupdate!");
       setIsFormOpen(false);
     } else {
       alert(`Gagal mengupdate film: ${result.error}`);
@@ -88,7 +88,7 @@ export default function MyList() {
     if (window.confirm("Apakah Anda yakin ingin menghapus film ini?")) {
       const result = await handleDeleteMovie(id);
       if (result.success) {
-        alert("Film berhasil dihapus!");
+      alert("Film berhasil dihapus!");
       } else {
         alert(`Gagal menghapus film: ${result.error}`);
       }
@@ -205,24 +205,24 @@ export default function MyList() {
 
         {/* Info Stats */}
         {!loading && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="bg-[#22282A] p-4 rounded-lg">
-              <p className="text-gray-400 text-sm">Total Film</p>
-              <p className="text-2xl font-bold">{getMovies().length}</p>
-            </div>
-            <div className="bg-[#22282A] p-4 rounded-lg">
-              <p className="text-gray-400 text-sm">Selesai Ditonton</p>
-              <p className="text-2xl font-bold">
-                {getMovies().filter((m) => m.status === "Selesai").length}
-              </p>
-            </div>
-            <div className="bg-[#22282A] p-4 rounded-lg">
-              <p className="text-gray-400 text-sm">Belum Selesai</p>
-              <p className="text-2xl font-bold">
-                {getMovies().filter((m) => m.status === "Belum Selesai").length}
-              </p>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-[#22282A] p-4 rounded-lg">
+            <p className="text-gray-400 text-sm">Total Film</p>
+            <p className="text-2xl font-bold">{getMovies().length}</p>
           </div>
+          <div className="bg-[#22282A] p-4 rounded-lg">
+            <p className="text-gray-400 text-sm">Selesai Ditonton</p>
+            <p className="text-2xl font-bold">
+              {getMovies().filter((m) => m.status === "Selesai").length}
+            </p>
+          </div>
+          <div className="bg-[#22282A] p-4 rounded-lg">
+            <p className="text-gray-400 text-sm">Belum Selesai</p>
+            <p className="text-2xl font-bold">
+              {getMovies().filter((m) => m.status === "Belum Selesai").length}
+            </p>
+          </div>
+        </div>
         )}
 
         {/* Movie List */}
